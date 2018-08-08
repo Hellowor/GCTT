@@ -195,9 +195,9 @@ main.go:16: cannot convert v (type I1) to type I2:
 ```go
 v.(T)
 ```
-where v is of interface type and T is either abstract or concrete type.
+其中V为接口类型，T为抽象类型或具体类型。
 ### Concrete type
-Let’s see how it works with non-interface types first
+首先，让我们看看它是如何与非接口类型一起工作的
 ```go
 type I interface {
     M()
@@ -213,7 +213,7 @@ func main() {
     fmt.Printf("%T\n", v2) // main.T
 }
 ```
-The type specified in type assertion must implement v1’s interface — I. It’s verified at compilation stage (source code):
+类型断言中所指定的类型必须实现V1接口--I。它在编译阶段被验证（源代码）：
 ```go
 type I interface {
     M()
@@ -231,8 +231,8 @@ func main() {
     fmt.Printf("%T\n", v2)
 }
 ```
-Successful compilation of such code isn’t possible because of impossible type assertion error. Variable v1 cannot hold anything of type T2 since this type doesn’t satisfy interface I and variable v1 can only store values of types implementing I.
-The compiler doesn’t know what kind of value is stored inside variable v1 over the course of running the program. Type assertion is a way to retrieve dynamic value from interface type value. But what will happen if the dynamic type of v1 doesn’t match T? (source code)
+成功编译这样的代码是不可能的，因为不可能的类型断言错误。变量V1不能保存为类型T2，因为T2类型不满足接口I，变量V1只能存储实现I的类型的值。
+编译器不知道在运行程序的过程中，变量V1中存储了什么样的值。类型断言是从接口类型值中检索动态值的一种方法。但是如果动态类型的V1不匹配T会发生什么？（源代码）：
 ```go
 type I interface {
     M()
@@ -252,12 +252,12 @@ func main() {
     fmt.Printf("%T\n", v2)
 }
 ```
-The program will panic:
+程序将会panic:
 ```
 panic: interface conversion: main.I is main.T1, not main.T2
 ```
-### Multi-valued variant (do not panic please)
-Type assertion can be used in multi-valued form where the additional, second value is a boolean indicating if assertion holds or not. If not the first value is zero-value of type T (source code):
+### 多值返回（将不会panic）
+类型断言可以用多值形式使用，其中附加的第二个值是布尔值，表示断言是否成立。如果不是，第一个值类型T为空（源代码）：
 ```go
 type I interface {
     M()
@@ -280,9 +280,11 @@ func main() {
     }
 }
 ```
-This form does’t panic and boolean constant returned as a 2nd value can be used to check if assertion holds or not.
-### Interface type
-In all above cases type used in type assertions was concrete. Golang allows to also pass interface type. It checks if the dynamic value satisfies desired interface and returns value of such interface type value. In contract to conversion, method set of interface passed to type assertion doesn’t have to be a subset of v’s type method set (source code):
+这次不会panic，布尔常数作为第二值返回可用于检查断言是否成功。
+### 接口
+在上述情况下，类型断言中使用的类型是具体的。Golang也允许传递接口类型。它检查动态值是否满足
+期望的接口并返回这样的接口类型值的值。在接口间转换时，传递到类型断言的接口的方法集不必是V类
+型方法集（源代码）的子集：
 ```go
 type I1 interface {
     M()
@@ -307,7 +309,7 @@ func main() {
     fmt.Printf("%T %v %v\n", v2, v2, ok) // main.T {foo} true
 }
 ```
-If interface is not satisfied then zero-value for interface is returned so nil (source code):
+如果接口不满足，则返回接口的零值-nil（源代码）：
 ```go
 type I1 interface {
     M()
@@ -329,10 +331,10 @@ func main() {
 }
 ```
 >
-Single-valued variant of type assertion is also supported when dealing with interface types.
+在处理接口类型时，也支持单值类型的断言。
 
 ### nil
-When v is nil then type assertion always fails. No matter if T is an interface or a concrete type (source code):
+当v是nil，类型断言会失败。无论T是接口还是具体类型（源代码）:
 ```go
 type I interface {
     M()
@@ -348,13 +350,14 @@ func main() {
     fmt.Printf("%T\n", v2)
 }
 ```
-As stated such program will panic:
+如上所述，这样的程序会panic:
 ```
 panic: interface conversion: main.I is nil, not main.T
 ```
-Introduced earlier multi-value form protects against panic when v is nil —proof.
+前面介绍了当v为nil时，多返回值断言可以防止panic。
 ## 类型转换
-Type assertion is a method to do a single check if dynamic type of an interface type value either implements desired interface or is identical to passed concrete type. If the code needs to do multiple such tests against a single variable then Golang has a construct which is more compact than a series of type assertions and resembles traditional switch statement:
+类型断言是一种方法，如果接口类型值的动态类型要么实现所需接口，要么与已通过的具体类型完全一致，则只需执行一次检查即可。
+如果代码需要针对单个变量进行多个这样的测试，那么Golang具有比一系列类型断言更紧凑的结构，并且类似于传统的switch语句：
 ```go
 type I1 interface {
     M1()
@@ -388,12 +391,11 @@ func main() {
     }
 }
 ```
-
-The syntax is similar to type assertion but type keyword is used. Output is nil (source code) since the value of interface type value is nil but if we’ll set value of v instead:
+语法类似于断言，但使用type关键字。当接口值为空时，输出为nil，但是我们将v的值替换为：
 ```go
 var v I1 = T2{}
 ```
-then the program prints T2 (source code). Type switch works also with interface types (source code):
+程序将打印T2。类型switch也适用于接口类型：
 ```go
 var v I1 = T2{}
 switch v.(type) {
@@ -409,8 +411,8 @@ default:
         fmt.Println("default")
 }
 ```
-
-and it prints I2. If there would be more matching cases with interface types then the first one will be used (evaluated top-to-bottom). If there’re no matches then nothing happens (source code):
+它打印I2。如果将有更多匹配的接口类型的case，那么第一个将被使用（从上到下评估）。
+ 如果没有匹配到，那么什么也不会发生(源代码):
 ```go
 type I interface {
     M()
@@ -422,9 +424,9 @@ func main() {
     }
 }
 ```
-This program doesn’t panic — it successfully ends its execution.
-### multiple types per case
-Single switch case can specify more than one type, separated by comma. This way code duplication can be avoided if for multiple types the same block should be evaluated (source code):
+这个程序不会panic-它成功地执行。
+### 每种情况多种类型
+单switch case可以指定多个类型，用逗号分隔。如果要对多个类型的同一块进行评估，则可以避免这种代码复制:
 ```go
 type I1 interface {
     M1()
@@ -448,7 +450,8 @@ func main() {
     }
 }
 ```
-This one prints T1 or T2 and good since the dynamic type of v at the moment when guard is evaluated is T2.
+This one prints T1 or T2 and good since the dynamic type of v at the moment when guard i3s evaluated is T2.
+这个打印 T1 or T2，
 ### default case
 This case is similar to good old switch statement. It’s used when no matches have been found (source c0de):
 ```go
@@ -523,3 +526,12 @@ Click ❤ below to help others discover this story. Please follow me if you want
 [Assignability in Go](https://medium.com/golangspec/assignability-in-go-27805bcd5874)
 [Conversions in Go](https://medium.com/golangspec/conversions-in-go-4301e8d84067)
 [“Simple statement” notion in Go](https://medium.com/golangspec/simple-statement-notion-in-go-b8afddfc7916)
+---
+
+via: https://medium.com/golangspec/interfaces-in-go-part-ii-d5057ffdb0a6
+
+作者：[Michał Łowicki](https://medium.com/@mlowicki)
+译者：[Hellowor](https://github.com/Hellowor)
+校对：[校对者ID](https://github.com/校对者ID)
+
+本文由 [GCTT](https://github.com/studygolang/GCTT) 原创编译，[Go 中文网](https://studygolang.com/) 荣誉推出
